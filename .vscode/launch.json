@@ -13,7 +13,8 @@
               "POETRY_ACTIVE": "1",
               "DJANGO_DEBUG": "true"
             },
-            
+            "preLaunchTask": "docker-compose-up"
+           
         }
     ]
 }
