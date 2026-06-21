@@ -1,3 +1,20 @@
-from django.shortcuts import render
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
 
-# Create your views here.
+from research.serializers import AskSerializer
+
+from .services import get_research_reponse
+
+
+class AskAPIView(GenericAPIView):
+    serializer_class = AskSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        question = serializer.validated_data.get("question")
+        response = get_research_reponse(question)
+
+        return Response({"response": response})
