@@ -2,12 +2,12 @@ from collections import defaultdict
 import os
 import json
 import subprocess
-from typing import Literal
 
 from ..data import EXT_TO_LANGUAGE, SKIP_DIRS
 from ..types import CodeChunk, ResearchAgentState
 
 from .chunk_extractor import extract_chunks
+from .utils import looks_like_file_path
 
 
 TOP_FILES = 5  # max files to extract chunks from per target
@@ -34,7 +34,7 @@ def explore_search_node(state: ResearchAgentState) -> dict:
         visited_set.add(target)
         visited_list.append(target)
 
-        if _looks_like_file_path(target):
+        if looks_like_file_path(target):
             chunks = _chunks_from_file_path(repo_path, target)
         else:
             hits = _run_ripgrep(repo_path, target)
@@ -156,19 +156,6 @@ def _python_grep(repo_path: str, target: str) -> list[dict]:
 # ─── File-path target handling ────────────────────────────────────────────────
 
 
-def _looks_like_file_path(target: str) -> bool:
-    """
-    Heuristic: does this target look like a path rather than a symbol?
-    Triggers on path separators OR a known code extension with no spaces.
-    """
-    if " " in target:
-        return False
-    if "/" in target or os.sep in target:
-        return True
-    ext = os.path.splitext(target)[1].lower()
-    return bool(ext and ext in EXT_TO_LANGUAGE)
-
-
 def _chunks_from_file_path(repo_path: str, target: str) -> list[CodeChunk]:
     """
     For file-path targets (e.g. 'auth/backends.py'), read the whole file.
@@ -185,6 +172,7 @@ def _chunks_from_file_path(repo_path: str, target: str) -> list[CodeChunk]:
     except OSError:
         return []
 
+    # TODO: this chunking is not good. important code will be left out.
     # If file is short enough, return whole thing; otherwise first N lines
     # with a note that it was truncated — evaluate node can follow up
     MAX_LINES = 200
