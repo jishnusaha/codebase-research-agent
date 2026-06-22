@@ -20,10 +20,11 @@ def get_research_reponse(message: str):
 
     return result["response"]
 
+
 # generate image of graph
 # png_data = agent.get_graph().draw_mermaid_png()
 # with open("graph.png", "wb") as f:
 #     f.write(png_data)
 
 # generate condole draw of graph
-# print(agent.get_graph().draw_mermaid())
+# print(agent.get_graph().draw_ascii())

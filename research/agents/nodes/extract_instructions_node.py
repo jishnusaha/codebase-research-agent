@@ -71,12 +71,3 @@ def extract_instructions_node(state: ResearchAgentState):
         "repo_url": data.repo_url,
         "question": data.question,
     }
-
-
-def route_after_extract_instructions_node(
-    state: ResearchAgentState,
-) -> Literal["clone_repo_node", "__end__"]:
-    if state["should_end"]:
-        return "__end__"
-
-    return "clone_repo_node"

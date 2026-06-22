@@ -14,6 +14,12 @@ class Finding(TypedDict):
     note: str  # LLM's short explanation of relevance
 
 
+class CodeChunk(TypedDict):
+    file: str  # relative path
+    lines: str  # e.g. "42-87"
+    content: str  # the extracted code text
+
+
 class ResearchAgentState(TypedDict):
     """Represents the state of an agent in the research process."""
 
@@ -35,6 +41,10 @@ class ResearchAgentState(TypedDict):
     visited: List[str]  # List not Set — checkpointer must serialize to JSON
     findings: List[Finding]
     iterations: int
+    explore_done: bool
+    # ephemeral, overwritten each iteration
+    current_target: str
+    current_chunks: List[CodeChunk]
 
     # results and control flow
     should_end: bool

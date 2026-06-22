@@ -1,0 +1,36 @@
+EXT_TO_LANGUAGE = {
+    ".py": "python",
+    ".ts": "typescript",
+    ".tsx": "typescript",
+    ".js": "javascript",
+    ".jsx": "javascript",
+    ".rs": "rust",
+    ".go": "go",
+    ".cs": "csharp",
+    ".java": "java",
+    ".rb": "ruby",
+    ".php": "php",
+    ".c": "c",
+    ".h": "c",
+    ".cpp": "cpp",
+    ".hpp": "cpp",
+}
+
+# Directories we never want to walk into when building the repo map
+SKIP_DIRS = {
+    ".git",
+    "node_modules",
+    "dist",
+    "build",
+    "venv",
+    ".venv",
+    "__pycache__",
+    ".next",
+    ".turbo",
+    "target",
+    "vendor",
+    ".idea",
+    ".vscode",
+    "coverage",
+    "egg-info",
+}

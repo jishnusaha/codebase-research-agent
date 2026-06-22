@@ -40,12 +40,3 @@ def clone_repo_node(state: ResearchAgentState):
         }
 
     return {"repo_path": cloned_repo_dir}
-
-
-def route_after_clone_repo_node(
-    state: ResearchAgentState,
-) -> Literal["build_repo_map", "__end__"]:
-    if state["should_end"]:
-        return "__end__"
-
-    return "build_repo_map"
