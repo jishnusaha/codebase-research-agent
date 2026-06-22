@@ -14,7 +14,7 @@ def get_research_reponse(message: str):
     }
 
     result = agent.invoke(
-        {"original_question": [HumanMessage(content=message)]},
+        {"original_question": [HumanMessage(content=message)], "should_end": False},
         config=config,
     )
 
