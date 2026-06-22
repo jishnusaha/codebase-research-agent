@@ -20,9 +20,7 @@ def get_research_reponse(message: str):
 
     return result["response"]
 
-    # png_data = agent.get_graph().draw_mermaid_png()
 
-    # with open("graph.png", "wb") as f:
-    #     f.write(png_data)
-
-    return "hello"
+# png_data = agent.get_graph().draw_mermaid_png()
+# with open("graph.png", "wb") as f:
+#     f.write(png_data)
