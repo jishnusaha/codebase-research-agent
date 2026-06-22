@@ -12,3 +12,7 @@ wheels/
 # Virtual environment directories
 .env
 .env.*
+
+# cloned repositories
+cloned_repos/
+
