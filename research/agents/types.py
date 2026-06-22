@@ -8,6 +8,12 @@ class RepoFileInfo(TypedDict):
     docstring: Optional[str]  # first docstring/comment, if cheaply extractable
 
 
+class Finding(TypedDict):
+    file: str
+    lines: str  # e.g. "42-87"
+    note: str  # LLM's short explanation of relevance
+
+
 class ResearchAgentState(TypedDict):
     """Represents the state of an agent in the research process."""
 
@@ -23,6 +29,12 @@ class ResearchAgentState(TypedDict):
     # --- populated by build_repo_map_node ---
     repo_map: List[RepoFileInfo]
     primary_language: Optional[str]
+
+    # --- populated by generate_keywords_node (Step 1) ---
+    search_queue: List[str]
+    visited: List[str]  # List not Set — checkpointer must serialize to JSON
+    findings: List[Finding]
+    iterations: int
 
     # results and control flow
     should_end: bool

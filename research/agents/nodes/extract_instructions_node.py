@@ -26,7 +26,7 @@ def _validate_repo_url(repo_url: str) -> bool:
 
 def extract_instructions_node(state: ResearchAgentState):
 
-    llm = ChatOpenAI(model_name="gpt-4", temperature=0).with_structured_output(
+    llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0).with_structured_output(
         ExtractInstructionsNodeInput
     )
 
