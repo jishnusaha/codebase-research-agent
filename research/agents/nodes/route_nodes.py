@@ -23,15 +23,15 @@ def route_after_clone_repo_node(
 
 def route_after_search(
     state: ResearchAgentState,
-) -> Literal["explore_evaluate_node", "synthesize_node"]:
+) -> Literal["explore_evaluate_node", "synthesize_output_node"]:
     if state["explore_done"] or not state["current_chunks"]:
-        return "synthesize_node"
+        return "synthesize_output_node"
     return "explore_evaluate_node"
 
 
 def route_after_evaluate(
     state: ResearchAgentState,
-) -> Literal["explore_search_node", "synthesize_node"]:
+) -> Literal["explore_search_node", "synthesize_output_node"]:
     if state["explore_done"]:
-        return "synthesize_node"
+        return "synthesize_output_node"
     return "explore_search_node"

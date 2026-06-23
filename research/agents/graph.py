@@ -6,7 +6,7 @@ from .nodes.build_repo_map import build_repo_map
 from .nodes.generate_keywords_node import generate_keywords_node
 from .nodes.explore_search_node import explore_search_node
 from .nodes.explore_evaluate_node import explore_evaluate_node
-from .nodes.synthesize_node import synthesize_node
+from .nodes.synthesize_output_node import synthesize_output_node
 
 from .nodes.route_nodes import (
     route_after_clone_repo_node,
@@ -27,7 +27,7 @@ graph.add_node("build_repo_map", build_repo_map)
 graph.add_node("generate_keywords_node", generate_keywords_node)
 graph.add_node("explore_search_node", explore_search_node)
 graph.add_node("explore_evaluate_node", explore_evaluate_node)
-graph.add_node("synthesize_node", synthesize_node)
+graph.add_node("synthesize_output_node", synthesize_output_node)
 
 # Define edges
 graph.add_edge(START, "extract_instructions_node")
@@ -39,7 +39,7 @@ graph.add_edge("build_repo_map", "generate_keywords_node")
 graph.add_edge("generate_keywords_node", "explore_search_node")
 graph.add_conditional_edges("explore_search_node", route_after_search)
 graph.add_conditional_edges("explore_evaluate_node", route_after_evaluate)
-graph.add_edge("synthesize_node", END)
+graph.add_edge("synthesize_output_node", END)
 
 
 # Compile the graph into an agent

@@ -141,7 +141,7 @@ def _build_prompt(
         Your tasks:
         1. Decide if the chunks above are relevant to the research question.
         2. If relevant, write a concise note explaining what they reveal.
-        3. Propose next search targets (symbols, literals, file paths) to deepen the answer.
+        3. Propose next search targets (symbols, literals) to deepen the answer.
         — Do NOT re-suggest anything already covered in findings so far.
         — Do NOT suggest generic terms like "import" or "class".
         4. Decide if the findings so far are enough to fully answer the question.
