@@ -6,7 +6,7 @@ from ..types import ResearchAgentState, Finding
 from .utils import looks_like_file_path
 
 
-MAX_ITERATIONS = 20
+MAX_ITERATIONS = 15
 MAX_CHUNK_CHARS = 3000  # per chunk — keeps prompt size bounded
 
 

@@ -29,6 +29,10 @@ class ResearchAgentState(TypedDict):
     repo_url: str
     question: str
 
+    # --- populated by check_existing_repo_node ---
+    should_clone: bool
+    should_build_repo_map: bool
+
     # --- populated by clone_repo_node ---
     repo_path: str  # local filesystem path to cloned repo
 

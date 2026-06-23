@@ -68,6 +68,6 @@ def extract_instructions_node(state: ResearchAgentState):
         }
 
     return {
-        "repo_url": data.repo_url,
+        "repo_url": data.repo_url.replace(".git", "").lower(),
         "question": data.question,
     }

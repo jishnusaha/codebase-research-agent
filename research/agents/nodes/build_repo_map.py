@@ -3,7 +3,7 @@ from typing import Counter
 
 from ..data import EXT_TO_LANGUAGE, SKIP_DIRS
 from ..types import RepoFileInfo, ResearchAgentState
-
+from ...models import ClonedRepository
 
 # Cap how much we read per file when sniffing for a leading docstring/comment
 DOCSTRING_PEEK_BYTES = 2000
@@ -87,6 +87,11 @@ def build_repo_map(state: ResearchAgentState):
                 )
             )
     primary_language = language_counts.most_common(1)[0][0] if language_counts else None
+
+    ClonedRepository.objects.filter(repo_url=state["repo_url"]).update(
+        repo_map=repo_map,
+        primary_language=primary_language,
+    )
 
     return {
         "repo_map": repo_map,
