@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codebase Research Agent</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0d;
+      --bg-panel:  #141414;
+      --bg-input:  #1a1a1a;
+      --bg-msg:    #1e1e1e;
+      --border:    #2a2a2a;
+      --border-focus: #444;
+      --text:      #e8e8e8;
+      --text-muted:#666;
+      --text-dim:  #444;
+      --accent:    #7c6af7;
+      --accent-dim:#2d2654;
+      --green:     #3dd68c;
+      --green-dim: #0d3320;
+      --amber:     #f0a04b;
+      --red:       #e05c5c;
+      --mono:      'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --sans:      -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+      flex-shrink: 0;
+    }
+
+    .logo {
+      width: 28px;
+      height: 28px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg { width: 14px; height: 14px; stroke: var(--accent); fill: none; }
+
+    header h1 {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--text);
+    }
+
+    .badge {
+      margin-left: auto;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    /* ── Messages area ── */
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      scroll-behavior: smooth;
+    }
+
+    #messages::-webkit-scrollbar { width: 4px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      margin: auto;
+      text-align: center;
+      max-width: 380px;
+    }
+
+    .empty-state .icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-state .icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--accent);
+      fill: none;
+    }
+
+    .empty-state h2 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .examples {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .example-btn {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text-muted);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .example-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    /* ── Message bubbles ── */
+    .msg {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 820px;
+    }
+
+    .msg-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+    }
+
+    .msg-meta .avatar {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .user-avatar { background: var(--accent-dim); color: var(--accent); }
+    .agent-avatar { background: var(--green-dim); color: var(--green); }
+
+    .msg-body {
+      background: var(--bg-msg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .user-msg .msg-body {
+      background: var(--accent-dim);
+      border-color: #3d3475;
+      color: #d4cfff;
+    }
+
+    /* ── Response sections ── */
+    .section-label {
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 12px 0 6px;
+    }
+
+    .section-label:first-child { margin-top: 0; }
+
+    .section-label.summary-label { color: var(--green); }
+    .section-label.how-label { color: var(--accent); }
+    .section-label.citations-label { color: var(--amber); }
+
+    .section-content {
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: #ccc;
+    }
+
+    .citation {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+
+    .citation-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    .citation-body { flex: 1; }
+
+    .citation-file {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--amber);
+      margin-bottom: 2px;
+    }
+
+    .citation-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Thinking indicator ── */
+    .thinking {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--bg-msg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text-muted);
+    }
+
+    .dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .dots span {
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.9); }
+      40%            { opacity: 1;   transform: scale(1.1); }
+    }
+
+    /* ── Input bar ── */
+    .input-bar {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-panel);
+      flex-shrink: 0;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 10px 14px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.15s;
+      min-height: 42px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    textarea::placeholder { color: var(--text-dim); }
+    textarea:focus { border-color: var(--border-focus); }
+
+    button[type="submit"] {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.15s;
+    }
+
+    button[type="submit"]:hover { opacity: 0.85; }
+    button[type="submit"]:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    button[type="submit"] svg {
+      width: 16px;
+      height: 16px;
+      stroke: #fff;
+      fill: none;
+    }
+
+    .input-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+    }
+
+    /* ── Error ── */
+    .error-msg .msg-body {
+      border-color: #4a2020;
+      background: #1c0f0f;
+      color: var(--red);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" stroke-width="2">
+      <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+    </svg>
+  </div>
+  <h1>Codebase Research Agent</h1>
+  <span class="badge">LangGraph</span>
+</header>
+
+<div id="messages">
+  <div class="empty-state" id="empty-state">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" stroke-width="1.5">
+        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+    </div>
+    <h2>Ask anything about a codebase</h2>
+    <p>Paste a GitHub URL and a research question. The agent will explore the code and return grounded answers with file citations.</p>
+    <div class="examples">
+      <button class="example-btn" onclick="fillExample(this)">
+        https://github.com/django/django — How does Django's ORM build SQL queries?
+      </button>
+      <button class="example-btn" onclick="fillExample(this)">
+        https://github.com/tiangolo/fastapi — How does FastAPI handle dependency injection?
+      </button>
+      <button class="example-btn" onclick="fillExample(this)">
+        https://github.com/celery/celery — How does Celery schedule periodic tasks?
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="input-bar">
+  <div class="input-row">
+    <div class="input-wrapper">
+      <textarea
+        id="input"
+        rows="1"
+        placeholder="Paste a GitHub URL and ask a question about the codebase…"
+        autocomplete="off"
+      ></textarea>
+    </div>
+    <button type="submit" id="send-btn" title="Send">
+      <svg viewBox="0 0 24 24" stroke-width="2.5">
+        <path d="M5 12h14M13 6l6 6-6 6"/>
+      </svg>
+    </button>
+  </div>
+  <div class="input-hint">Enter to send · Shift+Enter for new line</div>
+</div>
+
+<script>
+  const messagesEl = document.getElementById('messages');
+  const inputEl    = document.getElementById('input');
+  const sendBtn    = document.getElementById('send-btn');
+  const emptyState = document.getElementById('empty-state');
+
+  // Auto-resize textarea
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+  });
+
+  // Enter to send, Shift+Enter for newline
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  sendBtn.addEventListener('click', handleSend);
+
+  function fillExample(btn) {
+    inputEl.value = btn.textContent.trim();
+    inputEl.focus();
+    inputEl.dispatchEvent(new Event('input'));
+  }
+
+  function handleSend() {
+    const text = inputEl.value.trim();
+    if (!text || sendBtn.disabled) return;
+    submitQuestion(text);
+  }
+
+  function submitQuestion(question) {
+    emptyState.style.display = 'none';
+
+    appendUserMessage(question);
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    const thinking = appendThinking();
+
+    fetch('/research/ask/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ question }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      thinking.remove();
+      if (data.response) {
+        appendAgentMessage(data.response);
+      } else {
+        appendError('No response returned.');
+      }
+    })
+    .catch(() => {
+      thinking.remove();
+      appendError('Request failed. Check the server logs.');
+    })
+    .finally(() => {
+      sendBtn.disabled = false;
+      inputEl.focus();
+    });
+  }
+
+  function appendUserMessage(text) {
+    const el = document.createElement('div');
+    el.className = 'msg user-msg';
+    el.innerHTML = `
+      <div class="msg-meta">
+        <div class="avatar user-avatar">you</div>
+        <span>${timestamp()}</span>
+      </div>
+      <div class="msg-body">${escapeHtml(text)}</div>
+    `;
+    messagesEl.appendChild(el);
+    scrollToBottom();
+  }
+
+  function appendThinking() {
+    const el = document.createElement('div');
+    el.className = 'msg';
+    el.innerHTML = `
+      <div class="msg-meta">
+        <div class="avatar agent-avatar">ag</div>
+        <span>exploring codebase…</span>
+      </div>
+      <div class="thinking">
+        <div class="dots">
+          <span></span><span></span><span></span>
+        </div>
+        Searching and evaluating code…
+      </div>
+    `;
+    messagesEl.appendChild(el);
+    scrollToBottom();
+    return el;
+  }
+
+  function appendAgentMessage(response) {
+    const el = document.createElement('div');
+    el.className = 'msg';
+
+    // Parse the formatted response from synthesize_node
+    const body = parseResponse(response);
+
+    el.innerHTML = `
+      <div class="msg-meta">
+        <div class="avatar agent-avatar">ag</div>
+        <span>${timestamp()}</span>
+      </div>
+      <div class="msg-body">${body}</div>
+    `;
+    messagesEl.appendChild(el);
+    scrollToBottom();
+  }
+
+  function parseResponse(text) {
+    // Handle the structured output from synthesize_node's _format_response
+    // Format is: ## Summary\n...\n\n## How It Works\n...\n\n## Citations\n...
+    const sections = text.split(/^## /m).filter(Boolean);
+
+    if (sections.length < 2) {
+      // Plain text response (e.g. error from empty findings guard)
+      return `<div class="section-content">${escapeHtml(text)}</div>`;
+    }
+
+    let html = '';
+    for (const section of sections) {
+      const newlineIdx = section.indexOf('\n');
+      const title = section.slice(0, newlineIdx).trim();
+      const content = section.slice(newlineIdx + 1).trim();
+
+      if (title === 'Summary') {
+        html += `<div class="section-label summary-label">summary</div>`;
+        html += `<div class="section-content">${escapeHtml(content)}</div>`;
+
+      } else if (title === 'How It Works') {
+        html += `<div class="section-label how-label">how it works</div>`;
+        html += `<div class="section-content">${escapeHtml(content)}</div>`;
+
+      } else if (title === 'Citations') {
+        html += `<div class="section-label citations-label">citations</div>`;
+        const lines = content.split('\n').filter(l => l.trim().startsWith('•'));
+        for (const line of lines) {
+          const clean = line.replace(/^\s*•\s*/, '');
+          // Format: auth/backends.py (L42-87): explanation text
+          const match = clean.match(/^(.+?)\s*\(L(.+?)\):\s*(.*)$/);
+          if (match) {
+            html += `
+              <div class="citation">
+                <div class="citation-dot"></div>
+                <div class="citation-body">
+                  <div class="citation-file">${escapeHtml(match[1])} · L${escapeHtml(match[2])}</div>
+                  <div class="citation-note">${escapeHtml(match[3])}</div>
+                </div>
+              </div>`;
+          } else {
+            html += `<div class="citation-note" style="margin-top:4px">${escapeHtml(clean)}</div>`;
+          }
+        }
+      }
+    }
+    return html;
+  }
+
+  function appendError(msg) {
+    const el = document.createElement('div');
+    el.className = 'msg error-msg';
+    el.innerHTML = `
+      <div class="msg-meta">
+        <div class="avatar agent-avatar">ag</div>
+        <span>${timestamp()}</span>
+      </div>
+      <div class="msg-body">${escapeHtml(msg)}</div>
+    `;
+    messagesEl.appendChild(el);
+    scrollToBottom();
+  }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function timestamp() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+</script>
+
+</body>
+</html>

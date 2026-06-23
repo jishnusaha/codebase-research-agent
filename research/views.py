@@ -1,9 +1,14 @@
+from django.views.generic import TemplateView
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from research.serializers import AskSerializer
 
 from .services import get_research_reponse
+
+
+class ResearchChatView(TemplateView):
+    template_name = "research/chat.html"
 
 
 class AskAPIView(GenericAPIView):
